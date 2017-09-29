@@ -2,7 +2,7 @@
 Quickly get the taxonomy of a genome.
 
 ### OVERVIEW
-The program takes a genome bin, calls genes with prodigal, assigns those genes to an organism in a centrifuge database, and uses this ifnormation to determine the taxonomy of the bin.
+The program takes a genome bin, calls genes with prodigal, assigns those genes to an organism in a centrifuge database, and uses that information to determine the taxonomy of the bin.
 
 ### WARNING
 The way that this functions is by mapping the nucleotide sequence of genes to a reference database. Thus, this doesn't work very well for novel organisms that aren't in the centrifuge database provided. 
