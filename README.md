@@ -1,5 +1,5 @@
 # tRep
-Quick get the taxonomy of a genome.
+Quickly get the taxonomy of a genome.
 
 ### OVERVIEW
 The program takes a genome bin, calls genes with prodigal, assigns those genes to an organism in a centrifuge database, and uses this ifnormation to determine the taxonomy of the bin.
