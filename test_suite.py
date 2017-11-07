@@ -145,6 +145,9 @@ class testUniProt():
         #     #         if scaff not in db['scaffold'].tolist():
         #     #             print(scaff)
 
+class testMakeTdb():
+    pass
+
 
 if __name__ == '__main__':
     testUniProt().run()
