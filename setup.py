@@ -17,7 +17,7 @@ setup(name='tRep',
       packages=['tRep'],
       scripts=['bin/quickTaxonomy_centrifuge.py', 'bin/make_Tdb.py'],
       install_requires=[
-          'halo',
+        #   'halo',
           'pandas',
           'ete3',
           'drep'

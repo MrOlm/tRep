@@ -15,7 +15,7 @@ import glob
 import pandas as pd
 import os
 import time
-from halo import Halo
+# from halo import Halo
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -82,8 +82,9 @@ def gen_levels_db(hits):
     Levels = ['superkingdom','phylum','class','order','family','genus','species']
 
     # start the spinner
-    spinner = Halo(text='Parsing taxIDs', spinner='dots')
-    spinner.start()
+    # spinner = Halo(text='Parsing taxIDs', spinner='dots')
+    # spinner.start()
+    print("parsing taxIDs...")
 
     # set up the database
     table = {'taxID':[]}
@@ -111,7 +112,7 @@ def gen_levels_db(hits):
                 table[level].append('unk')
         table['taxID'].append(t)
 
-    spinner.stop()
+    # spinner.stop()
 
     return pd.DataFrame(table)
 
@@ -121,9 +122,10 @@ def gen_taxonomy_table(Idb, on='scaffold', minPerc=50):
     '''
     Levels = ['superkingdom','phylum','class','order','family','genus','species']
 
-    # start the spinner
-    spinner = Halo(text='Generating taxonomy table', spinner='dots')
-    spinner.start()
+    # # start the spinner
+    # spinner = Halo(text='Generating taxonomy table', spinner='dots')
+    # spinner.start()
+    print("Generating taxonomy table...")
 
     # set up Sdb
     table = {}
@@ -156,7 +158,7 @@ def gen_taxonomy_table(Idb, on='scaffold', minPerc=50):
     Sdb['taxonomy'] = Sdb['full_taxonomy'].map(get_simple_tax)
     del Sdb['minPerc']
 
-    spinner.stop()
+    # spinner.stop()
     return Sdb
 
 def get_simple_tax(full_taxonomy):
