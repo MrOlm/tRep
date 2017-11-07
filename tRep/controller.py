@@ -12,7 +12,7 @@ def convert_b6_to_Tdb(args):
 
     # Load Bdb
     Bdb = tRep.load_b6(b6_loc)
-    Bdb = Bdb[Bdb['taxID'] != 'NA']
+    Bdb = Bdb[Bdb['taxID'].astype(str) != 'NA']
 
     # Add the taxonomy
     tax = tRep.gen_levels_db(list(Bdb['taxID'].unique()))
