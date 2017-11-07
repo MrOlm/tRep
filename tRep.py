@@ -14,6 +14,11 @@ import shutil
 import glob
 import pandas as pd
 import os
+import time
+from halo import Halo
+
+import warnings
+warnings.filterwarnings("ignore")
 
 from ete3 import NCBITaxa
 ncbi = NCBITaxa()
@@ -21,6 +26,200 @@ ncbi = NCBITaxa()
 import drep.d_cluster
 import drep.d_bonus
 import drep.d_filter
+
+'''
+THIS SECTION IS BASED ON USEARCH
+'''
+def load_b6(location, type='b6+'):
+    '''
+    return the b6 file as a pandas DataFrame
+    '''
+
+    Bdb = pd.read_table(location, header=None)
+    if type == 'b6+':
+        '''
+        parse the b6+ format, like from Brian
+        '''
+        header = ['querry', 'target', 'percentID', 'alignment_length', 'mm', 'gaps',\
+            'querry_start', 'querry_end', 'target_start', 'target_end', 'e-value', 'bit_score',\
+            'extra']
+        Bdb.columns = header
+        Bdb['annotation'], Bdb['taxID'], Bdb['taxString'] = zip(*Bdb['extra'].map(parse_b6))
+        Bdb['scaffold'] = ['_'.join(x.split('_')[:-1]) for x in Bdb['querry']]
+
+    return Bdb
+
+def parse_b6(line):
+    '''
+    return a parsed list from a b6+ annotation string:
+
+    [annotation, \ # the functional annotation
+    taxID, \
+    taxString
+    ]
+    taxOrder = ['species', 'phyla', 'class', 'order', 'family', 'genus']
+    '''
+    words = [x.strip() for x in line.split(';')]
+    annotation = words[0]
+    try:
+        taxID = int([x for x in words if x.startswith('TaxID')][0].split()[0].replace(\
+                'TaxID=',''))
+    except:
+        taxID = 'NA'
+
+    try:
+        taxString = line.split('"')[1]
+        taxList = [x.strip() for x in taxString.split(';')]
+    except:
+        taxString = ';'.join(['NA'] * 7)
+
+    return annotation, taxID, taxString
+
+def gen_levels_db(hits):
+    '''
+    from a list of taxIDs, return a DataFrame deliniating their taxonomies
+    '''
+    Levels = ['superkingdom','phylum','class','order','family','genus','species']
+
+    # start the spinner
+    spinner = Halo(text='Parsing taxIDs', spinner='dots')
+    spinner.start()
+
+    # set up the database
+    table = {'taxID':[]}
+    for level in Levels:
+        table[level] = []
+
+    # fill in nested dictionary
+    for t in hits:
+        if t == 0:
+            continue
+
+        try:
+            lin = ncbi.get_lineage(t)
+        except:
+            continue
+
+        lin2name  = ncbi.get_taxid_translator(lin)
+        name2rank = ncbi.get_rank(lin)
+        rank2name = {v: k for k, v in name2rank.items()}
+
+        for level in Levels:
+            if level in rank2name:
+                table[level].append(lin2name[rank2name[level]])
+            else:
+                table[level].append('unk')
+        table['taxID'].append(t)
+
+    spinner.stop()
+
+    return pd.DataFrame(table)
+
+def gen_taxonomy_table(Idb, on='scaffold', minPerc=50):
+    '''
+    From a dataframe with all of the levels present, calculate percentages
+    '''
+    Levels = ['superkingdom','phylum','class','order','family','genus','species']
+
+    # start the spinner
+    spinner = Halo(text='Generating taxonomy table', spinner='dots')
+    spinner.start()
+
+    # set up Sdb
+    table = {}
+    for level in Levels:
+        table[level + '_winner'] = []
+        table[level + '_percent'] = []
+    table[on] = []
+
+    # make Sdb
+    for thing, db in Idb.groupby(on):
+        table[on].append(thing)
+        for level in Levels:
+            vcounts = dict(db[level].value_counts())
+            try:
+                winner = max(vcounts, key=vcounts.get)
+            except:
+                table[level + '_winner'].append('unk')
+                table[level + '_percent'].append(100)
+                continue
+
+            total = sum(vcounts.values())
+            count = vcounts[winner]
+            table[level + '_winner'].append(winner)
+            table[level + '_percent'].append(((count/total) *100))
+    Sdb = pd.DataFrame(table)
+
+    # add taxonomy
+    Sdb['minPerc'] = int(minPerc)
+    Sdb['full_taxonomy'] = Sdb.apply(calculate_full_taxonmy, axis=1)
+    Sdb['taxonomy'] = Sdb['full_taxonomy'].map(get_simple_tax)
+    del Sdb['minPerc']
+
+    spinner.stop()
+    return Sdb
+
+def get_simple_tax(full_taxonomy):
+    '''
+    from the full taxonomy, get the simple taxonomy (just the highest name)
+    '''
+    taxes = full_taxonomy.split('|')
+    for t in reversed(taxes):
+        if t != 'unk':
+            return t
+    return 'unk'
+
+def calculate_full_taxonmy(row):
+    '''
+    calculate consensus taxonomy based on a row of Sdb
+    '''
+    minPerc = row['minPerc']
+    Levels = ['superkingdom','phylum','class','order','family','genus','species']
+    taxString = ''
+    skip = False
+    for l in Levels:
+        if (int(row[l + '_percent']) < minPerc) | skip:
+            taxString += 'unk|'
+            skip = True
+        else:
+            taxString += row[l + '_winner'] + '|'
+    return taxString[:-1]
+
+def add_bin_to_tdb(tdb, s2b):
+    '''
+    Add the 'bin' column to tdb based off of an stb file
+    '''
+    if type(s2b) == dict:
+        pass
+    else:
+        s2b = load_stb(s2b)
+
+    # Add the bin to Tdb
+    tdb['bin'] = tdb['scaffold'].map(s2b)
+    tdb['bin'] = tdb['bin'].fillna('unk')
+
+    # Make sure at least some scaffolds map
+    assert len(tdb[tdb['bin'] == 'unk']) != len(tdb), \
+        "No scaffolds in the stb map to a bin"
+    assert len(tdb[tdb['bin'] != tdb['bin']]) == 0
+
+    return tdb
+
+def load_stb(file):
+    stb = {}
+    with open(file,'r') as ins:
+        for line in ins:
+            words = line.strip().split('\t')
+            if words[0].startswith('scaffold_name'): continue
+            scaffold = words[0]
+            b = words[1]
+            stb[scaffold] = b
+    return stb
+
+###############################################################################
+'''
+THIS SECTION IS BASED ON CENTRIFUGE
+'''
 
 def main(**kwargs):
     """ Main entry point of the app """
@@ -73,8 +272,8 @@ def from_tdb(Tdb, **kwargs):
         tdb.to_csv(kwargs.get('full_dump'), index=False)
 
     elif kwargs.get('method') == 'percent':
-        tax = gen_taxonomy_string(Tdb[Tdb['score'] > 250], minPerc= int(\
-            kwargs['percent']))
+        tax = gen_taxonomy_string(Tdb['hit'][Tdb['score'] > 250], minPerc= int(\
+            kwargs['percent']).to_list())
         print(tax)
 
     elif kwargs.get('method') == 'max':
@@ -86,6 +285,8 @@ def from_tdb(Tdb, **kwargs):
 def gen_taxonomy_string(hits, minPerc= 50, testing=False):
     '''
     Determines the lowest taxonomic level with at least minPerc certainty
+
+    hits = list of taxIDs
 
     For every hit:
         reconstruct the lineage (kingdom, phylum, class, ect.)
@@ -108,28 +309,23 @@ def gen_taxonomy_string(hits, minPerc= 50, testing=False):
         countDic[level] = {}
 
     # fill in nested dictionary
-    for t in hits['taxID'].tolist():
+    for t in hits:
         if t == 0:
             continue
 
-        lin = ncbi.get_lineage(t)
+        try:
+            lin = ncbi.get_lineage(t)
+        except:
+            continue
 
         lin2name  = ncbi.get_taxid_translator(lin)
         name2rank = ncbi.get_rank(lin)
-
-        #gen = False
 
         for i in lin:
             rank = name2rank[i]
             name = lin2name[i]
             if rank in countDic:
-                #countDic[rank][name] = countDic[rank].get(name,0) + 1
                 countDic[rank][i] = countDic[rank].get(i,0) + 1
-            #if rank == 'phylum':
-            #    gen = True
-
-        #if gen == False:
-        #    print(t)
 
     # make the taxonomy string
     WinningName = None
