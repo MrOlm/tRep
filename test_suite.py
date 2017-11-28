@@ -123,27 +123,7 @@ class testUniProt():
             gg_tax = row['taxonomy'].split(',')[0]
 
             assert my_tax == gg_tax
-        # # Make sure the ggkbase org table and my table have the same bin characteristics
-        # for org, db in Tdb.groupby('bin'):
-        #     scaffolds = len(db['scaffold'].unique())
-        #     features = len(db)
-        #
-        #     gg_scaffolds = int(Gdb['# contigs'][Gdb['name'] == org].tolist()[0])
-        #     gg_features = int(Gdb['# features'][Gdb['name'] == org].tolist()[0])
-        #
-        #     print("{0} {1}".format(features, gg_features))
-        #
-        #     # print(org)
-        #     # gg_scaffolds = int(Gdb['# contigs'][Gdb['name'] == org].tolist()[0])
-        #     # print("{0} {1}".format(scaffolds, gg_scaffolds))
-        #     # # assert scaffolds == gg_scaffolds, \
-        #     # #     str(scaffolds) + '_' + str(gg_scaffolds)
-        #     #
-        #     # if org == 'dasN1_003_000G1_maxbin2_maxbin_009_fasta_fa':
-        #     #     scaffs = [k for k,v in stb.items() if v == 'dasN1_003_000G1_maxbin2.maxbin.009.fasta.fa']
-        #     #     for scaff in scaffs:
-        #     #         if scaff not in db['scaffold'].tolist():
-        #     #             print(scaff)
+
 
 class testMakeTdb():
     pass
