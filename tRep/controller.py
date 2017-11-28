@@ -4,10 +4,9 @@ import pandas as pd
 
 import tRep
 
-def convert_b6_to_Tdb(args):
+def convert_b6_to_Tdb(args, save=False):
     b6_loc = args.get('b6_loc')
     out_loc = args.get('out_loc')
-    save = args.get('save', False)
 
     # Load Bdb
     Bdb = tRep.load_b6(b6_loc)

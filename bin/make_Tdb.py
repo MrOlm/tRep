@@ -15,11 +15,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Make a Tdb.csv file")
 
     InpArgs = parser.add_argument_group('INPUT ARGUMENTS')
-    InpArgs.add_argument('-b', '--b6_loc', help='location of b6+ file')
+    InpArgs.add_argument('-b', '--b6_loc', help='location of b6+ file', \
+        required=True)
 
     OutArgs = parser.add_argument_group('OUTPUT ARGUMENTS')
     OutArgs.add_argument('-o', '--out_loc',  help=\
-        'location of output file')
+        'location of output file', required=True)
 
     # Specify output of "--version"
     parser.add_argument(

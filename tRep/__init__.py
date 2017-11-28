@@ -4,8 +4,10 @@
 tRep
 """
 
+import os
 __author__ = "Matt Olm"
-__version__ = "0.1.0"
+__version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), \
+                'VERSION')).read().strip()
 __license__ = "MIT"
 
 import argparse
@@ -13,9 +15,7 @@ import tempfile
 import shutil
 import glob
 import pandas as pd
-import os
 import time
-# from halo import Halo
 
 import warnings
 warnings.filterwarnings("ignore")

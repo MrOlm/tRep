@@ -15,9 +15,9 @@ setup(name='tRep',
       license='MIT',
       package_data={'tRep': ['VERSION']},
       packages=['tRep'],
-      scripts=['bin/quickTaxonomy_centrifuge.py', 'bin/make_Tdb.py'],
+      scripts=['bin/quickTaxonomy_centrifuge.py', 'bin/make_Tdb.py',\
+        'bin/tax_collector.py'],
       install_requires=[
-        #   'halo',
           'pandas',
           'ete3',
           'drep'
