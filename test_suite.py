@@ -41,6 +41,9 @@ def get_script_loc(script):
     if script == 'tax_collector.py':
         return os.path.join(str(os.getcwd()), \
             'bin/tax_collector.py')
+    elif script == 'make_Tdb.py':
+        return os.path.join(str(os.getcwd()), \
+            'bin/make_Tdb.py')
 
 class testUniProt():
     def setUp(self):
@@ -138,7 +141,37 @@ class testUniProt():
             assert my_tax == gg_tax
 
 class testMakeTdb():
-    pass
+    def setUp(self):
+        self.b6_loc = load_b6_loc()
+        self.test_dir = load_random_test_dir()
+        self.script_loc = get_script_loc('make_Tdb.py')
+
+        if os.path.isdir(self.test_dir):
+            shutil.rmtree(self.test_dir)
+        os.mkdir(self.test_dir)
+
+    def tearDown(self):
+        if os.path.isdir(self.test_dir):
+            shutil.rmtree(self.test_dir)
+
+    def run(self):
+        self.setUp()
+        self.main_test_1()
+        self.tearDown()
+
+    def main_test_1(self):
+        '''
+        Make sure tax collector makes all the files when run by default
+        '''
+        out_base = os.path.join(self.test_dir, 'test_out_base')
+
+        cmd = [self.script_loc, '-b', self.b6_loc, '-o', out_base]
+        call(cmd)
+
+        files = glob.glob(out_base + '*')
+        assert len(files) == 1
+        for f in files:
+            assert os.path.getsize(f) > 0
 
 class test_tax_collector():
     def setUp(self):
@@ -158,10 +191,6 @@ class test_tax_collector():
         self.setUp()
         self.main_test_1()
         self.tearDown()
-        #
-        # self.setUp()
-        # self.main_test_2()
-        # self.tearDown()
 
     def main_test_1(self):
         '''
@@ -178,6 +207,7 @@ class test_tax_collector():
             assert os.path.getsize(f) > 0
 
 if __name__ == '__main__':
-    #testUniProt().run()
+    testUniProt().run()
     test_tax_collector().run()
+    testMakeTdb().run()
     print('everything is working swimmingly!')

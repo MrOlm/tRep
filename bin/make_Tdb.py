@@ -9,7 +9,7 @@ import tRep.controller
 __version__ = tRep.__version__
 
 def main(**args):
-    tRep.controller.convert_b6_to_Tdb(args)
+    tRep.controller.convert_b6_to_Tdb(args, save=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Make a Tdb.csv file")
