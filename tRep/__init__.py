@@ -16,6 +16,7 @@ import shutil
 import glob
 import pandas as pd
 import time
+import numpy as np
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -62,10 +63,10 @@ def parse_b6(line):
     words = [x.strip() for x in line.split(';')]
     annotation = words[0]
     try:
-        taxID = int([x for x in words if x.startswith('TaxID')][0].split()[0].replace(\
+        taxID = float([x for x in words if x.startswith('TaxID')][0].split()[0].replace(\
                 'TaxID=',''))
     except:
-        taxID = 'NA'
+        taxID = np.nan
 
     try:
         taxString = line.split('"')[1]

@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 
+'''
+Make a Tdb.csv file from a b6+ file
+
+A Tdb.csv file lists all genes in a b6+ file, along with their full taxonomy at all available levels
+'''
+
 import argparse
 import sys
-
 import tRep
 import tRep.controller
 

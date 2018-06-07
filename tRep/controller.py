@@ -10,11 +10,15 @@ def convert_b6_to_Tdb(args, save=False):
 
     # Load Bdb
     Bdb = tRep.load_b6(b6_loc)
-    Bdb = Bdb[Bdb['taxID'].astype(str) != 'NA']
+    Bdb = Bdb[~Bdb['taxID'].isna()]
 
     # Add the taxonomy
     tax = tRep.gen_levels_db(list(Bdb['taxID'].unique()))
+
+    # Merge in
     Tdb = pd.merge(Bdb, tax, on='taxID', how='outer')
+
+    assert len(Tdb) == len(Bdb)
 
     # Save
     if save:

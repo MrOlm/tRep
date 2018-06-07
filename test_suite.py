@@ -66,7 +66,7 @@ class testUniProt():
         test loading b6 file and running on large amounts of data
         '''
         Bdb = tRep.load_b6(self.b6_loc)
-        Bdb = Bdb[Bdb['taxID'] != 'NA']
+        Bdb = Bdb[~Bdb['taxID'].isna()]
         tax = tRep.gen_taxonomy_string(Bdb['taxID'].tolist())
         assert tax == '1239|Bacteria|Firmicutes|unk|unk|unk|unk|unk'
 
@@ -76,14 +76,13 @@ class testUniProt():
         '''
         # Load Bdb
         Bdb = tRep.load_b6(self.b6_loc)
-        Bdb = Bdb[Bdb['taxID'] != 'NA']
-        Gdb = pd.read_table(self.ggkbase_s2t_loc)
+        Bdb = Bdb[~Bdb['taxID'].isna()]
 
-        # Add the taxonomy
+        # Get Tdb
         tax = tRep.gen_levels_db(list(Bdb['taxID'].unique()))
         Tdb = pd.merge(Bdb, tax, on='taxID', how='outer')
-        assert len(Tdb) == len(Bdb)
 
+        assert len(Tdb) == len(Bdb), [len(Tdb), len(Bdb)]
 
     def main_test_3(self):
         '''
