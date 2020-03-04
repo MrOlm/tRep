@@ -16,6 +16,10 @@ def load_b6_loc():
     return os.path.join(str(os.getcwd()), \
         'testFiles/N1_003_000G1_scaffold_min1000.fa.genes.faa-vs-uniprot.b6+')
 
+def load_testdir():
+    return os.path.join(str(os.getcwd()), \
+        'testFiles/')
+
 def load_ggkbase_loc():
     return os.path.join(str(os.getcwd()), \
         'testFiles/N1_003_000G1.contig-taxonomy.tsv')
@@ -142,6 +146,7 @@ class testUniProt():
 class testMakeTdb():
     def setUp(self):
         self.b6_loc = load_b6_loc()
+        self.diamond_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.translated.diamondOut'
         self.test_dir = load_random_test_dir()
         self.script_loc = get_script_loc('make_Tdb.py')
 
@@ -158,9 +163,13 @@ class testMakeTdb():
         self.main_test_1()
         self.tearDown()
 
+        self.setUp()
+        self.main_test_2()
+        self.tearDown()
+
     def main_test_1(self):
         '''
-        Make sure tax collector makes all the files when run by default
+        Make sure MakeTdb makes all the files when run by default
         '''
         out_base = os.path.join(self.test_dir, 'test_out_base')
 
@@ -172,10 +181,26 @@ class testMakeTdb():
         for f in files:
             assert os.path.getsize(f) > 0
 
+    def main_test_2(self):
+        '''
+        Make sure MakeTdb makes all the files when run with diamondOut
+        '''
+        out_base = os.path.join(self.test_dir, 'test_out_base')
+
+        cmd = [self.script_loc, '-b', self.diamond_loc, '-o', out_base]
+        call(cmd)
+
+        files = glob.glob(out_base + '*')
+        print(files)
+        assert len(files) == 1
+        for f in files:
+            assert os.path.getsize(f) > 0
+
 class test_tax_collector():
     def setUp(self):
         self.b6_loc = load_b6_loc()
         self.test_dir = load_random_test_dir()
+        self.diamond_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.translated.diamondOut'
         self.script_loc = get_script_loc('tax_collector.py')
 
         if os.path.isdir(self.test_dir):
@@ -191,6 +216,10 @@ class test_tax_collector():
         self.main_test_1()
         self.tearDown()
 
+        self.setUp()
+        self.main_test_2()
+        self.tearDown()
+
     def main_test_1(self):
         '''
         Make sure tax collector makes all the files when run by default
@@ -198,6 +227,20 @@ class test_tax_collector():
         out_base = os.path.join(self.test_dir, 'test_out_base')
 
         cmd = [self.script_loc, '-b', self.b6_loc, '-o', out_base]
+        call(cmd)
+
+        files = glob.glob(out_base + '*')
+        assert len(files) == 3
+        for f in files:
+            assert os.path.getsize(f) > 0
+
+    def main_test_2(self):
+        '''
+        Make sure tax collector makes dimaond when run by default
+        '''
+        out_base = os.path.join(self.test_dir, 'test_out_base')
+
+        cmd = [self.script_loc, '-b', self.diamond_loc, '-o', out_base]
         call(cmd)
 
         files = glob.glob(out_base + '*')

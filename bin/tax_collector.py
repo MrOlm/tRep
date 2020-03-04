@@ -38,7 +38,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(\
         description=\
 '''
-Generate taxonomy report from b6+ file
+Generate taxonomy report from a b6+ file resulting from a single genome
 ''',\
         formatter_class=argparse.RawTextHelpFormatter)
 

@@ -31,12 +31,37 @@ import drep.d_filter
 '''
 THIS SECTION IS BASED ON USEARCH
 '''
-def load_b6(location, type='b6+'):
+def type_b6(location):
+    '''
+    Figure out the type of b6+ file this actually is
+
+    All based on the number of underscores is the second column
+    '''
+    types = []
+    count = 0
+    with open(location, 'r') as o:
+        for line in o.readlines():
+            line = line.strip()
+            underscores = line.split()[1].count('_')
+            types.append(underscores)
+            count += 1
+            if count >= 5:
+                break
+
+    if set(types) == set([1]):
+        return 'b6+'
+    elif set(types) == set([2]):
+        return 'diamond'
+    else:
+        print("I cant tell what kind of b6+ file you have! Quitting")
+        raise Exception()
+
+def load_b6(location):
     '''
     return the b6 file as a pandas DataFrame
     '''
+    type = type_b6(location)
 
-    Bdb = pd.read_table(location, header=None)
     if type == 'b6+':
         '''
         parse the b6+ format, like from Brian
@@ -44,11 +69,33 @@ def load_b6(location, type='b6+'):
         header = ['querry', 'target', 'percentID', 'alignment_length', 'mm', 'gaps',\
             'querry_start', 'querry_end', 'target_start', 'target_end', 'e-value', 'bit_score',\
             'extra']
-        Bdb.columns = header
+        Bdb = pd.read_csv(location, names=header, sep='\t')
         Bdb['annotation'], Bdb['taxID'], Bdb['taxString'] = zip(*Bdb['extra'].map(parse_b6))
         Bdb['scaffold'] = ['_'.join(x.split('_')[:-1]) for x in Bdb['querry']]
 
+    elif type == 'diamond':
+        '''
+        parse like this is from the diamond out
+        '''
+        header = ['querry', 'target', 'percentID', 'alignment_length', 'mm', 'gaps',\
+            'querry_start', 'querry_end', 'target_start', 'target_end', 'e-value', 'bit_score',\
+            'extra']
+        Bdb = pd.read_csv(location, names=header, sep='\t')
+        Bdb['taxID'] = Bdb['target'].map(parse_diamond)
+        Bdb['scaffold'] = ['_'.join(x.split('|')[0].split('_')[:-1]) for x in Bdb['querry']]
+
+    else:
+        print("I dont know how to parse type {0}".format(type))
+        raise Exception()
+
     return Bdb
+
+def parse_diamond(line):
+    try:
+        taxID = float(line.split('_')[1])
+    except:
+        taxID = np.nan
+    return taxID
 
 def parse_b6(line):
     '''
