@@ -6,7 +6,7 @@ def version():
     versionFile = open(os.path.join(setupDir, 'tRep', 'VERSION'))
     return versionFile.read().strip()
 
-setup(name='tRep',
+setup(name='taxRep',
       version=version(),
       description='Taxonomy of microbial genomes',
       url='https://github.com/MrOlm/tRep',

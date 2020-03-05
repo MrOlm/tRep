@@ -1,8 +1,14 @@
 # tRep
 Some scripts to help you get the taxonomy of a genome
 
-### OVERVIEW
+### Overview
 This program is a collection of tools for determining the taxonomy of a genome using a number of different tools. Its pretty unorgaized at the moment, but might develop into something at some point.
+
+### Installation
+
+```
+pip install taxRep
+```
 
 ### Dependencies
 
@@ -65,7 +71,7 @@ N4_005_008G1_scaffold_0_5|N4_005_008G1_Pseudomonas_aeruginosa_66_425|N4_005_008G
 
 Where the first column is the query sequence and the second column is the modified header with taxID information.
 
-** Yes, I know both of these files look nothing alike, and its silly that I'm calling them both b6+ files, but tRep is able to parse them both just fine if you use them when it asks for a b6+ file **
+**Yes, I know both of these files look different, but tRep is able to parse them both just fine if you use them when it asks for a b6+ file**
 
 ## make_Tdb.py
 
