@@ -202,6 +202,7 @@ class test_tax_collector():
         self.test_dir = load_random_test_dir()
         self.diamond_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.translated.diamondOut'
         self.script_loc = get_script_loc('tax_collector.py')
+        self.ggkbase_s2t_loc = load_ggkbase_loc()
 
         if os.path.isdir(self.test_dir):
             shutil.rmtree(self.test_dir)
@@ -232,6 +233,20 @@ class test_tax_collector():
         files = glob.glob(out_base + '*')
         assert len(files) == 3
         for f in files:
+            if 'fullGenomeTaxonomy' in f:
+                db = pd.read_csv(f)
+                assert len(db) == 1
+            assert os.path.getsize(f) > 0
+
+        # Do it with an .stb file
+        cmd = [self.script_loc, '-b', self.b6_loc, '-o', out_base, '-stb', load_sample_s2b_loc(), '--SkipScaffolds']
+        call(cmd)
+
+        files = glob.glob(out_base + '*')
+        for f in files:
+            if 'fullGenomeTaxonomy' in f:
+                db = pd.read_csv(f, sep='\t')
+                assert len(db) > 1
             assert os.path.getsize(f) > 0
 
     def main_test_2(self):

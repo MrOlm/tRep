@@ -11,7 +11,8 @@ __version__ = tRep.__version__
 
 def main(**args):
     out_base = args.get('out_loc')
-    skip_scaffs = args.get('SkipScaffolds', False)
+    skip_scaffs = args.get('SkipScaffolds', None)
+    stb = args.get('scaffold2bin', None)
 
     # Make Tdb
     Tdb = tRep.controller.convert_b6_to_Tdb(args, save=False)
@@ -19,13 +20,17 @@ def main(**args):
         index=False, sep='\t')
 
     # Make genome level taxonomy
-    Tdb['genome'] = 'genome'
-    gdb = tRep.gen_taxonomy_table(Tdb, on='genome')
+    if stb is None:
+        Tdb['bin'] = 'genome'
+    else:
+        Tdb = tRep.add_bin_to_tdb(Tdb, stb)
+
+    gdb = tRep.gen_taxonomy_table(Tdb, on='bin')
     gdb.to_csv(os.path.join(out_base) + '_fullGenomeTaxonomy.csv', \
         index=False, sep='\t')
 
     # Make scaffold level taxonomy
-    if not skip_scaffs:
+    if skip_scaffs is not None:
         try:
             Tdb['scaffold'] = ['_'.join(x.split('_')[:-1]) for x in Tdb['querry']]
             sdb = tRep.gen_taxonomy_table(Tdb, on='scaffold')
@@ -47,7 +52,7 @@ Generate taxonomy report from a b6+ file resulting from a single genome
 
     OutArgs = parser.add_argument_group('OUTPUT ARGUMENTS')
     OutArgs.add_argument('-o', '--out_loc',  help=\
-        'output basename')
+        'output basename', required=True)
 
     OptArgs = parser.add_argument_group('OPTIONALL ARGUMENTS')
     OptArgs.add_argument('--SkipScaffolds',  help=\
