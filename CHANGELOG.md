@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project (attempts to) adhere to [Semantic Versioning](http://semver.org/).
 
+## [0.4.1] - 2020-03-09
+- fix dumb bug with wrong name of functional_annotation.py
+
 ## [0.4.0] - 2020-03-09
 - tax_collector now correctly produces "tsv" files
 - added "functional_tax.py"; we'll see how it does
