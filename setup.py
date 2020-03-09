@@ -16,7 +16,7 @@ setup(name='taxRep',
       package_data={'tRep': ['VERSION']},
       packages=['tRep'],
       scripts=['bin/quickTaxonomy_centrifuge.py', 'bin/make_Tdb.py',\
-        'bin/tax_collector.py'],
+        'bin/tax_collector.py', 'bin/funcional_tax.py'],
       install_requires=[
           'pandas',
           'ete3',

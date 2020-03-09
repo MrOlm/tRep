@@ -48,6 +48,9 @@ def get_script_loc(script):
     elif script == 'make_Tdb.py':
         return os.path.join(str(os.getcwd()), \
             'bin/make_Tdb.py')
+    elif script == 'functional_tax.py':
+        return os.path.join(str(os.getcwd()), \
+            'bin/functional_tax.py')
 
 class testUniProt():
     def setUp(self):
@@ -196,11 +199,43 @@ class testMakeTdb():
         for f in files:
             assert os.path.getsize(f) > 0
 
+class testFunctional_tax():
+    def setUp(self):
+        self.b6_loc = load_b6_loc()
+        self.test_dir = load_random_test_dir()
+        self.diamond_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.translated.diamondOut'
+        self.aa_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.faa'
+        self.script_loc = get_script_loc('functional_tax.py')
+        self.small_tans_table = load_testdir() + 'uniref100.subset.ttable'
+
+        if os.path.isdir(self.test_dir):
+            shutil.rmtree(self.test_dir)
+        os.mkdir(self.test_dir)
+
+    def tearDown(self):
+        if os.path.isdir(self.test_dir):
+            shutil.rmtree(self.test_dir)
+
+    def run(self):
+        self.setUp()
+        self.test_1()
+        self.tearDown()
+
+    def test_1(self):
+        out_base = os.path.join(self.test_dir, 'test_out_base')
+        cmd = [self.script_loc, '-b', self.b6_loc, '-o', out_base, '-d', self.small_tans_table]
+        call(cmd)
+
+        files = glob.glob(out_base + '*')
+        assert len(files) == 1, files
+        print(files)
+
 class test_tax_collector():
     def setUp(self):
         self.b6_loc = load_b6_loc()
         self.test_dir = load_random_test_dir()
         self.diamond_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.translated.diamondOut'
+        self.aa_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.faa'
         self.script_loc = get_script_loc('tax_collector.py')
         self.ggkbase_s2t_loc = load_ggkbase_loc()
 
@@ -221,13 +256,17 @@ class test_tax_collector():
         self.main_test_2()
         self.tearDown()
 
+        self.setUp()
+        self.main_test_3()
+        self.tearDown()
+
     def main_test_1(self):
         '''
         Make sure tax collector makes all the files when run by default
         '''
         out_base = os.path.join(self.test_dir, 'test_out_base')
 
-        cmd = [self.script_loc, '-b', self.b6_loc, '-o', out_base]
+        cmd = [self.script_loc, '-b', self.b6_loc, '-o', out_base, '-stb', 'ALL']
         call(cmd)
 
         files = glob.glob(out_base + '*')
@@ -259,12 +298,77 @@ class test_tax_collector():
         call(cmd)
 
         files = glob.glob(out_base + '*')
-        assert len(files) == 3
+        assert len(files) == 2
         for f in files:
             assert os.path.getsize(f) > 0
+
+    def main_test_3(self):
+        '''
+        Make sure tax collector works with aa
+        '''
+        # Try with group-level taxonomy
+        out_base = os.path.join(self.test_dir, 'test_out_base_g')
+        cmd = [self.script_loc, '-b', self.diamond_loc, '-o', out_base, '-a', self.aa_loc, '--tax_type', 'group', '-stb', 'ALL']
+        call(cmd)
+
+        # Load gene taxonomy
+        file = glob.glob(out_base + '*fullGeneTaxonomy.tsv')[0]
+        gdb = pd.read_csv(file, sep='\t')
+        assert len(gdb) == 6282, len(gdb)
+
+        # Load scaffold taxonomy
+        file = glob.glob(out_base + '*fullScaffoldTaxonomy.tsv')[0]
+        sdb = pd.read_csv(file, sep='\t')
+        assert len(sdb) == 59
+
+        # Load genome taxonomy
+        file = glob.glob(out_base + '*fullGenomeTaxonomy.tsv')[0]
+        genomedb = pd.read_csv(file, sep='\t')
+        assert len(genomedb) == 1
+
+        # Try with species-level taxonomy
+        out_base = os.path.join(self.test_dir, 'test_out_base_s')
+        cmd = [self.script_loc, '-b', self.diamond_loc, '-o', out_base, '-a', self.aa_loc, '--tax_type', 'species', '-stb', 'ALL']
+        call(cmd)
+
+        # Load gene taxonomy
+        file = glob.glob(out_base + '*fullGeneTaxonomy.tsv')[0]
+        gdbS = pd.read_csv(file, sep='\t')
+        assert len(gdbS) == 6282, len(gdb)
+
+        # Load scaffold taxonomy
+        file = glob.glob(out_base + '*fullScaffoldTaxonomy.tsv')[0]
+        sdbS = pd.read_csv(file, sep='\t')
+        assert len(sdbS) == 59
+
+        # Load genome taxonomy
+        file = glob.glob(out_base + '*fullGenomeTaxonomy.tsv')[0]
+        genomedbS = pd.read_csv(file, sep='\t')
+        assert len(genomedbS) == 1
+
+        # Try without adding aa
+        out_base = os.path.join(self.test_dir, 'test_out_base_N')
+        cmd = [self.script_loc, '-b', self.diamond_loc, '-o', out_base, '--tax_type', 'species', '-stb', 'ALL']
+        call(cmd)
+
+        # Load gene taxonomy
+        file = glob.glob(out_base + '*fullGeneTaxonomy.tsv')[0]
+        gdbN = pd.read_csv(file, sep='\t')
+        assert len(gdbN) != 6282, len(gdb)
+
+        # Load scaffold taxonomy
+        file = glob.glob(out_base + '*fullScaffoldTaxonomy.tsv')[0]
+        sdbN = pd.read_csv(file, sep='\t')
+        assert len(sdbN) != 59, len(sdbN)
+
+        # Load genome taxonomy
+        file = glob.glob(out_base + '*fullGenomeTaxonomy.tsv')[0]
+        genomedbN = pd.read_csv(file, sep='\t')
+        assert len(genomedbN) == 1
 
 if __name__ == '__main__':
     testUniProt().run()
     test_tax_collector().run()
     testMakeTdb().run()
+    testFunctional_tax().run()
     print('everything is working swimmingly!')

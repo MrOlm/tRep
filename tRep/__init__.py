@@ -3,30 +3,31 @@
 """
 tRep
 """
-
 import os
 __author__ = "Matt Olm"
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), \
                 'VERSION')).read().strip()
 __license__ = "MIT"
 
+import glob
+import time
+import shutil
 import argparse
 import tempfile
-import shutil
-import glob
-import pandas as pd
-import time
 import numpy as np
+import pandas as pd
 
 import warnings
 warnings.filterwarnings("ignore")
 
+from Bio import SeqIO
 from ete3 import NCBITaxa
+from collections import defaultdict
 ncbi = NCBITaxa()
 
-import drep.d_cluster
 import drep.d_bonus
 import drep.d_filter
+import drep.d_cluster
 
 '''
 THIS SECTION IS BASED ON USEARCH
@@ -56,7 +57,7 @@ def type_b6(location):
         print("I cant tell what kind of b6+ file you have! Quitting")
         raise Exception()
 
-def load_b6(location):
+def load_b6(location, tax_type='species'):
     '''
     return the b6 file as a pandas DataFrame
     '''
@@ -81,7 +82,7 @@ def load_b6(location):
             'querry_start', 'querry_end', 'target_start', 'target_end', 'e-value', 'bit_score',\
             'extra']
         Bdb = pd.read_csv(location, names=header, sep='\t')
-        Bdb['taxID'] = Bdb['target'].map(parse_diamond)
+        Bdb['taxID'] = Bdb['target'].apply(parse_diamond, tax_type=tax_type)
         Bdb['scaffold'] = ['_'.join(x.split('|')[0].split('_')[:-1]) for x in Bdb['querry']]
 
     else:
@@ -90,9 +91,37 @@ def load_b6(location):
 
     return Bdb
 
-def parse_diamond(line):
+def parse_prodigal_genes(gene_fasta):
+    '''
+    Parse the prodigal .fna file
+
+    Return a datatable with gene info and a dictionary of gene -> sequence
+    '''
+    table = defaultdict(list)
+    print(gene_fasta)
+    for record in SeqIO.parse(gene_fasta, 'fasta'):
+        gene = str(record.id)
+
+        table['gene'].append(gene)
+        table['scaffold'].append("_".join(gene.split("_")[:-1]))
+        table['direction'].append(record.description.split("#")[3].strip())
+        table['partial'].append('partial=00' not in record.description)
+
+        # NOTE: PRODIGAL USES A 1-BASED INDEX AND WE USE 0, SO CONVERT TO 0 HERE
+        table['start'].append(int(record.description.split("#")[1].strip())-1)
+        table['end'].append(int(record.description.split("#")[2].strip())-1)
+
+    Gdb = pd.DataFrame(table)
+
+    return Gdb
+
+def parse_diamond(line, tax_type='species'):
+    if tax_type == 'species':
+        loc = 1
+    elif tax_type == 'group':
+        loc = 2
     try:
-        taxID = float(line.split('_')[1])
+        taxID = float(line.split('_')[loc])
     except:
         taxID = np.nan
     return taxID
@@ -163,6 +192,9 @@ def gen_levels_db(hits):
     # spinner.stop()
 
     return pd.DataFrame(table)
+
+def get_levels():
+    return ['superkingdom','phylum','class','order','family','genus','species']
 
 def gen_taxonomy_table(Idb, on='scaffold', minPerc=50):
     '''
