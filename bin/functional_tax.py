@@ -49,7 +49,7 @@ def funcional_annotation(tt_loc, hits):
         for line in f:
             if line.split('\t')[0] in hits:
                 linewords = line.strip().split('\t')
-                linewords[0] = linewords[1]
+                r2t[linewords[0]] = linewords[1]
     return r2t
 
 

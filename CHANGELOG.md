@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project (attempts to) adhere to [Semantic Versioning](http://semver.org/).
 
+## [0.4.3] - 2020-03-09
+- so dumb
+
 ## [0.4.2] - 2020-03-09
 - change how functional_annotation.py works
 
