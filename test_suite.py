@@ -206,7 +206,7 @@ class testFunctional_tax():
         self.diamond_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.translated.diamondOut'
         self.aa_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.faa'
         self.script_loc = get_script_loc('functional_tax.py')
-        self.small_tans_table = load_testdir() + 'uniref100.subset.ttable'
+        self.small_tans_table = load_testdir() + 'uniref100.subset.ttable.gz'
 
         if os.path.isdir(self.test_dir):
             shutil.rmtree(self.test_dir)

@@ -7,6 +7,7 @@ Simple script to get functional taxonomy from a b6 file and a translation table
 import os
 import sys
 import time
+import gzip
 import argparse
 import pandas as pd
 
@@ -25,7 +26,7 @@ def main(**args):
 
     # Load translations
     start = time.time()
-    r2t = load_transtable(database)
+    r2t = funcional_annotation(database, set(Bdb['target'].tolist()))
     end = time.time()
     print("{0:.1f} seconds to load translation database".format(end-start))
 
@@ -39,6 +40,18 @@ def main(**args):
 def load_transtable(loc):
     db = pd.read_csv(loc, sep = '\t', names=['ID', 'annotation'], dtype=str)
     return db.set_index('ID')['annotation'].to_dict()
+
+def funcional_annotation(tt_loc, hits):
+    r2t = dict()
+    assert type(hits) == type(set(hits))
+
+    with gzip.open(tt_loc,'rt') as f:
+        for line in f:
+            if line.split('\t')[0] in hits:
+                linewords = line.strip().split('\t')
+                linewords[0] = linewords[1]
+    return r2t
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Simple script to get functional taxonomy from a b6 file and a translation table")
