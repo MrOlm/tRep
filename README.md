@@ -85,7 +85,7 @@ N1_003_000G1_scaffold_0_40,A0A0F4WWR7_9CLOT,100.0,208,0,0,1,208,1,208,1.29999999
 ```
 
 ### Quick start:
-```
+<!-- ```
 ./make_Tdb.py -h
 usage: make_Tdb.py [-h] -b B6_LOC -o OUT_LOC [--version]
 
@@ -102,36 +102,42 @@ INPUT ARGUMENTS:
 OUTPUT ARGUMENTS:
   -o OUT_LOC, --out_loc OUT_LOC
                         location of output file
-```
+``` -->
 
 ## tax_collector.py
 
-This generates a taxonomy report from a b6+ file resulting from a single genome
+This generates a taxonomy report from a b6+ file resulting from a single genome or multiple genomes with an stb file
 
 ### Quick start:
 ```
-$ ./tax_collector.py -h
-usage: tax_collector.py [-h] [-b B6_LOC] [-o OUT_LOC] [--SkipScaffolds]
-                        [-stb SCAFFOLD2BIN] [--version]
+$ tax_collector.py -h
+usage: tax_collector.py [-h] -b B6_LOC [-stb SCAFFOLD2BIN] [-a AMINO_ACIDS] -o
+                        OUT_LOC [--SkipScaffolds] [--tax_type {species,group}]
+                        [--update]
 
-Generate taxonomy report from a b6+ file resulting from a single genome
+              ...::: tRep v0.5.0 :::...
+      Generate taxonomy report from a b6+ file
 
 optional arguments:
   -h, --help            show this help message and exit
-  --version             show program's version number and exit
 
 INPUT ARGUMENTS:
   -b B6_LOC, --b6_loc B6_LOC
                         location of b6+ file
+  -stb SCAFFOLD2BIN, --scaffold2bin SCAFFOLD2BIN
+                        scaffold to bin file for generating per-genome taxonomy. Pass in the word "ALL" to consider all genes the same genome
+  -a AMINO_ACIDS, --amino_acids AMINO_ACIDS
+                        prodigal output used to make the b6 file; allows identification of fully unknown genes
 
 OUTPUT ARGUMENTS:
   -o OUT_LOC, --out_loc OUT_LOC
                         output basename
 
-OPTIONALL ARGUMENTS:
+OPTIONAL ARGUMENTS:
   --SkipScaffolds       skip generating per-scaffold taxonomy
-  -stb SCAFFOLD2BIN, --scaffold2bin SCAFFOLD2BIN
-                        scaffold to bin file for generating per-genome taxonomy
+  --tax_type {species,group}
+                        If using the translated b6, do you want the species or group taxID?
+  --update              Update the NCBI taxomony before running (takes ~ 5 minutes)
 ```
 
 ## quickTaxonomy_centrifuge.py

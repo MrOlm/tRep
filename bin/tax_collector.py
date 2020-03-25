@@ -13,6 +13,12 @@ def main(**args):
     out_base = args.get('out_loc')
     skip_scaffs = args.get('SkipScaffolds', False)
     stb = args.get('scaffold2bin', None)
+    update = args.get('update', False)
+
+    if update:
+        from ete3 import NCBITaxa
+        ncbi = NCBITaxa()
+        ncbi.update_taxonomy_database()
 
     # Make Tdb (gene_level taxonomy)
     Tdb = tRep.controller.convert_b6_to_Tdb(args, save=False)
@@ -45,8 +51,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(\
         description=\
 '''
-Generate taxonomy report from a b6+ file
-''',\
+              ...::: tRep v{0} :::...
+      Generate taxonomy report from a b6+ file
+
+'''.format(__version__),\
         formatter_class=argparse.RawTextHelpFormatter)
 
     InpArgs = parser.add_argument_group('INPUT ARGUMENTS')
@@ -65,15 +73,10 @@ Generate taxonomy report from a b6+ file
         'skip generating per-scaffold taxonomy',action='store_true', default=False)
     OptArgs.add_argument('--tax_type',  help=\
         "If using the translated b6, do you want the species or group taxID?",
-        action='store', default='species', choices=['species', 'group'])
-
-
-
-    # Specify output of "--version"
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="%(prog)s (version {version})".format(version=__version__))
+        action='store', default='group', choices=['species', 'group'])
+    OptArgs.add_argument('--update',  help=\
+        "Update the NCBI taxomony before running (takes ~ 5 minutes)",
+        action='store_true')
 
     args = sys.argv[1:]
     if (len(args) == 0):

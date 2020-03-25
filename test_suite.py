@@ -235,6 +235,7 @@ class test_tax_collector():
         self.b6_loc = load_b6_loc()
         self.test_dir = load_random_test_dir()
         self.diamond_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.translated.diamondOut'
+        self.diamond_loc_nospecies = load_testdir() + 'no_species.diamondOut'
         self.aa_loc = load_testdir() + 'N4_005_008G1_Pseudomonas_aeruginosa_66_425.proteins.faa'
         self.script_loc = get_script_loc('tax_collector.py')
         self.ggkbase_s2t_loc = load_ggkbase_loc()
@@ -259,6 +260,19 @@ class test_tax_collector():
         self.setUp()
         self.main_test_3()
         self.tearDown()
+
+        self.setUp()
+        self.main_test_4()
+        self.tearDown()
+
+        self.setUp()
+        self.main_test_5()
+        self.tearDown()
+
+        # THIS TAKES A WHILE AND REQUIRES SUPERVISION; NO NEED TO RUN NORMALLY
+        # self.setUp()
+        # self.update_test()
+        # self.tearDown()
 
     def main_test_1(self):
         '''
@@ -325,6 +339,7 @@ class test_tax_collector():
         file = glob.glob(out_base + '*fullGenomeTaxonomy.tsv')[0]
         genomedb = pd.read_csv(file, sep='\t')
         assert len(genomedb) == 1
+        print("Group - {0}".format(genomedb['full_taxonomy'].tolist()[0]))
 
         # Try with species-level taxonomy
         out_base = os.path.join(self.test_dir, 'test_out_base_s')
@@ -345,6 +360,7 @@ class test_tax_collector():
         file = glob.glob(out_base + '*fullGenomeTaxonomy.tsv')[0]
         genomedbS = pd.read_csv(file, sep='\t')
         assert len(genomedbS) == 1
+        print("Species - {0}".format(genomedbS['full_taxonomy'].tolist()[0]))
 
         # Try without adding aa
         out_base = os.path.join(self.test_dir, 'test_out_base_N')
@@ -365,6 +381,75 @@ class test_tax_collector():
         file = glob.glob(out_base + '*fullGenomeTaxonomy.tsv')[0]
         genomedbN = pd.read_csv(file, sep='\t')
         assert len(genomedbN) == 1
+
+    def main_test_4(self):
+        '''
+        Make sure tax collector works when the taxID hit has no species call
+        '''
+        out_base = os.path.join(self.test_dir, 'test_out_base')
+
+        cmd = [self.script_loc, '-b', self.diamond_loc_nospecies, '-o', out_base]
+        call(cmd)
+
+        # Load the gene table
+        Gdb = pd.read_csv(glob.glob(out_base + '*')[0], sep='\t')
+        assert Gdb['superkingdom_winner'].tolist()[0] == 'Bacteria'
+
+        files = glob.glob(out_base + '*')
+        assert len(files) == 2
+        for f in files:
+            assert os.path.getsize(f) > 0
+
+    def main_test_5(self):
+        '''
+        Compare group and species taxonomy
+        '''
+        # Try with group-level taxonomy
+        out_base = os.path.join(self.test_dir, 'test_out_base_g')
+        cmd = [self.script_loc, '-b', self.diamond_loc, '-o', out_base, '-a', self.aa_loc, '--tax_type', 'group', '-stb', 'ALL']
+        call(cmd)
+
+        # Load gene taxonomy
+        file = glob.glob(out_base + '*fullGeneTaxonomy.tsv')[0]
+        ggdb = pd.read_csv(file, sep='\t')
+        assert len(ggdb) == 6282, len(ggdb)
+
+        # Try with species-level taxonomy
+        out_base = os.path.join(self.test_dir, 'test_out_base_s')
+        cmd = [self.script_loc, '-b', self.diamond_loc, '-o', out_base, '-a', self.aa_loc, '--tax_type', 'species', '-stb', 'ALL']
+        call(cmd)
+
+        # Load gene taxonomy
+        file = glob.glob(out_base + '*fullGeneTaxonomy.tsv')[0]
+        gsdb = pd.read_csv(file, sep='\t')
+        assert len(gsdb) == 6282, len(gsdb)
+
+        # Compare
+        # Find cases where species is missing
+        missing_species = set(gsdb[gsdb['superkingdom'] == 'unk']['querry'].tolist())
+
+        # Get the group hits
+        db = ggdb[(ggdb['querry'].isin(missing_species)) & (ggdb['superkingdom'] != 'unk')]
+        db['problem_species'] = [x.split('_')[1] if len(x.split('_')) > 2 else 'WEIRD' for x in db['target']]
+        print(db['problem_species'].value_counts())
+
+    def update_test(self):
+        '''
+        Make sure tax collector actually updates
+        '''
+        out_base = os.path.join(self.test_dir, 'test_out_base')
+
+        cmd = [self.script_loc, '-b', self.diamond_loc_nospecies, '-o', out_base, '--update']
+        call(cmd)
+
+        # Load the gene table
+        Gdb = pd.read_csv(glob.glob(out_base + '*')[0], sep='\t')
+        assert Gdb['superkingdom_winner'].tolist()[0] == 'Bacteria'
+
+        files = glob.glob(out_base + '*')
+        assert len(files) == 2
+        for f in files:
+            assert os.path.getsize(f) > 0
 
 if __name__ == '__main__':
     testUniProt().run()
