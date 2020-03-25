@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project (attempts to) adhere to [Semantic Versioning](http://semver.org/).
 
+## [0.5.1] - 2020-03-25
+- Add "SkipGenes"
+
 ## [0.5.0] - 2020-03-25
 - Add an "--update" option to tax_collector
 - Update the README a tiny bit

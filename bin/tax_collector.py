@@ -12,6 +12,7 @@ __version__ = tRep.__version__
 def main(**args):
     out_base = args.get('out_loc')
     skip_scaffs = args.get('SkipScaffolds', False)
+    skip_genes = args.get('SkipGenes', False)
     stb = args.get('scaffold2bin', None)
     update = args.get('update', False)
 
@@ -22,8 +23,9 @@ def main(**args):
 
     # Make Tdb (gene_level taxonomy)
     Tdb = tRep.controller.convert_b6_to_Tdb(args, save=False)
-    Tdb.to_csv(os.path.join(out_base) + '_fullGeneTaxonomy.tsv', \
-        index=False, sep='\t')
+    if not skip_genes:
+        Tdb.to_csv(os.path.join(out_base) + '_fullGeneTaxonomy.tsv', \
+            index=False, sep='\t')
 
     # Make genome level taxonomy
     if stb is None:
@@ -69,6 +71,8 @@ if __name__ == "__main__":
         'output basename', required=True)
 
     OptArgs = parser.add_argument_group('OPTIONAL ARGUMENTS')
+    OptArgs.add_argument('--SkipGenes',  help=\
+        'skip generating per-gene taxonomy',action='store_true', default=False)
     OptArgs.add_argument('--SkipScaffolds',  help=\
         'skip generating per-scaffold taxonomy',action='store_true', default=False)
     OptArgs.add_argument('--tax_type',  help=\

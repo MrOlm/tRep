@@ -292,10 +292,12 @@ class test_tax_collector():
             assert os.path.getsize(f) > 0
 
         # Do it with an .stb file
-        cmd = [self.script_loc, '-b', self.b6_loc, '-o', out_base, '-stb', load_sample_s2b_loc(), '--SkipScaffolds']
+        out_base = os.path.join(self.test_dir, 'test_out_base2')
+        cmd = [self.script_loc, '-b', self.b6_loc, '-o', out_base, '-stb', load_sample_s2b_loc(), '--SkipScaffolds', '--SkipGenes']
         call(cmd)
 
         files = glob.glob(out_base + '*')
+        assert len(files) == 1, files
         for f in files:
             if 'fullGenomeTaxonomy' in f:
                 db = pd.read_csv(f, sep='\t')
@@ -452,8 +454,8 @@ class test_tax_collector():
             assert os.path.getsize(f) > 0
 
 if __name__ == '__main__':
-    testUniProt().run()
     test_tax_collector().run()
+    testUniProt().run()
     testMakeTdb().run()
     testFunctional_tax().run()
     print('everything is working swimmingly!')
