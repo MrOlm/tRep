@@ -37,6 +37,14 @@ def convert_b6_to_Tdb(args, save=False):
             db[level] = 'unk'
         Tdb = pd.concat([Tdb, db]).reset_index(drop=True)
 
+        if len(Tdb) > 0:
+            type = tRep.type_b6(b6_loc)
+            if type == 'diamond':
+                Tdb['scaffold'] = ['_'.join(x.split('|')[0].split('_')[:-1]) for x in Tdb['querry']]
+            elif type == 'b6+':
+                Tdb['scaffold'] = ['_'.join(x.split('_')[:-1]) for x in Tdb['querry']]
+
+
     # Save
     if save:
         Tdb.to_csv(out_loc, index=False)

@@ -335,6 +335,7 @@ class test_tax_collector():
         # Load scaffold taxonomy
         file = glob.glob(out_base + '*fullScaffoldTaxonomy.tsv')[0]
         sdb = pd.read_csv(file, sep='\t')
+        GSCAFFS = set(sdb['scaffold'].tolist())
         assert len(sdb) == 59
 
         # Load genome taxonomy
@@ -356,7 +357,8 @@ class test_tax_collector():
         # Load scaffold taxonomy
         file = glob.glob(out_base + '*fullScaffoldTaxonomy.tsv')[0]
         sdbS = pd.read_csv(file, sep='\t')
-        assert len(sdbS) == 59
+        print(GSCAFFS - set(sdbS['scaffold'].tolist()))
+        assert len(sdbS) == 59, len(sdbS)
 
         # Load genome taxonomy
         file = glob.glob(out_base + '*fullGenomeTaxonomy.tsv')[0]

@@ -41,7 +41,6 @@ def main(**args):
 
     # Make scaffold level taxonomy
     if not skip_scaffs:
-        Tdb['scaffold'] = ['_'.join(x.split('|')[0].split('_')[:-1]) for x in Tdb['querry']]
         try:
             sdb = tRep.gen_taxonomy_table(Tdb, on='scaffold')
             sdb.to_csv(os.path.join(out_base) + '_fullScaffoldTaxonomy.tsv', \

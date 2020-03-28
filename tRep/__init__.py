@@ -89,6 +89,8 @@ def load_b6(location, tax_type='species'):
         print("I dont know how to parse type {0}".format(type))
         raise Exception()
 
+    if len(Bdb) > 0:
+        Bdb = Bdb.sort_values('e-value').drop_duplicates(subset=['querry', 'target'], keep='first')
     return Bdb
 
 def parse_prodigal_genes(gene_fasta):
