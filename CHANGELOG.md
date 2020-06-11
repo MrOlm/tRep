@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project (attempts to) adhere to [Semantic Versioning](http://semver.org/).
 
+## [0.5.3] - 2020-06-11
+- More parsing of | characters, and warnings when they're present
+
 ## [0.5.2] - 2020-03-28
 - Remove redundencies in b6 when loading (keep the one with the lowest e-value)
 

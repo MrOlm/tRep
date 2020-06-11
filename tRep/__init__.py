@@ -54,7 +54,7 @@ def type_b6(location):
     elif set(types) == set([2]):
         return 'diamond'
     else:
-        print("I cant tell what kind of b6+ file you have! Quitting")
+        print("The database you align against must have taxIDs present. Yours does not. Please see the README for details")
         raise Exception()
 
 def load_b6(location, tax_type='species'):
@@ -277,6 +277,16 @@ def add_bin_to_tdb(tdb, s2b):
         pass
     else:
         s2b = load_stb(s2b)
+
+    # Throw a warning
+    problems = [s for s, b in s2b.items() if '|' in s]
+    if len(problems) > 0:
+        message = "Hey bucko! You really shouldnt have | characters in your fasta IDs!"
+        message += " There are {0} scaffolds in the stb that have them".format(len(problems))
+        message += " (example - {0} in bin {1}).".format(problems[0], s2b[problems[0]])
+        message += " I will try and handle this (and yell more if I cant), but if you see problems"
+        message += " this is likely the issue"
+        print(message)
 
     # Add the bin to Tdb
     tdb['bin'] = tdb['scaffold'].map(s2b)

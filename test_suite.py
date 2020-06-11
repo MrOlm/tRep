@@ -11,6 +11,7 @@ import pandas as pd
 from subprocess import call
 
 import tRep
+import tRep.controller
 
 def load_b6_loc():
     return os.path.join(str(os.getcwd()), \
@@ -240,6 +241,9 @@ class test_tax_collector():
         self.script_loc = get_script_loc('tax_collector.py')
         self.ggkbase_s2t_loc = load_ggkbase_loc()
 
+        self.big_b6 = load_testdir() + 'part02.fna.genes.faa_vs_uniref100.b6'
+        self.big_stb = load_testdir() + 'part02.stb.txt'
+
         if os.path.isdir(self.test_dir):
             shutil.rmtree(self.test_dir)
         os.mkdir(self.test_dir)
@@ -267,6 +271,10 @@ class test_tax_collector():
 
         self.setUp()
         self.main_test_5()
+        self.tearDown()
+
+        self.setUp()
+        self.main_test_6()
         self.tearDown()
 
         # THIS TAKES A WHILE AND REQUIRES SUPERVISION; NO NEED TO RUN NORMALLY
@@ -436,6 +444,34 @@ class test_tax_collector():
         db = ggdb[(ggdb['querry'].isin(missing_species)) & (ggdb['superkingdom'] != 'unk')]
         db['problem_species'] = [x.split('_')[1] if len(x.split('_')) > 2 else 'WEIRD' for x in db['target']]
         print(db['problem_species'].value_counts())
+
+    def main_test_6(self):
+        '''
+        Try it on a complex stb file
+        '''
+        assert tRep.controller.extract_diamond_scaffold("ERS537210|77|k99_15040_13") == "ERS537210|77|k99_15040"
+
+        # Do it with an .stb file
+        out_base = os.path.join(self.test_dir, 'test_out_base2')
+        cmd = ["tax_collector.py", '-b', self.big_b6, '-o', out_base, '-stb', self.big_stb, '--SkipGenes', '--SkipScaffolds']
+        call(cmd)
+
+        # Figure out the number of genomes in the .stb file
+        stb = pd.read_csv(self.big_stb, sep='\t', names=['scaffold', 'bin'])
+
+        files = glob.glob(out_base + '*')
+        assert len(files) == 1, files
+        for f in files:
+            if 'fullGenomeTaxonomy' in f:
+                db = pd.read_csv(f, sep='\t')
+                MISSING = set(stb['bin'].unique()) - set(db['bin'].unique())
+                for m in MISSING:
+                    print(m)
+                    print(stb[stb['bin'] == m])
+                    break
+                assert len(db) > 1
+                assert len(db) == len(stb['bin'].unique()), [len(db), len(stb['bin'].unique())]
+            assert os.path.getsize(f) > 0
 
     def update_test(self):
         '''

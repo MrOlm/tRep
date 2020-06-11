@@ -4,6 +4,29 @@ import pandas as pd
 
 import tRep
 
+def extract_diamond_scaffold(id):
+    '''
+    From the gene name in diamond, extract the scaffold ID
+
+    This is hard because diamond converts spaces in fasta headers to "|" symbols.
+    '''
+    # Try the way that works if | is not in the scaffold IDs
+    scaff_gene = id.split('|')[0]
+
+    # Make sure theres a gene available
+    if (('_'  in scaff_gene) and (scaff_gene.split('_')[-1].isnumeric())):
+        return '_'.join(scaff_gene.split('_')[:-1])
+
+    # Otherwise try and parse as a non-diamond
+    scaff_gene = id
+
+    if (('_'  in scaff_gene) and (scaff_gene.split('_')[-1].isnumeric())):
+        return '_'.join(scaff_gene.split('_')[:-1])
+
+    # If you reach here, you dont know what to do
+    print("I dont know how to parse the gene {0} into a scaffold; it will be ignored for scaffold and genome profiling".format(
+        id))
+
 def convert_b6_to_Tdb(args, save=False):
     b6_loc = args.get('b6_loc')
     out_loc = args.get('out_loc')
@@ -37,12 +60,12 @@ def convert_b6_to_Tdb(args, save=False):
             db[level] = 'unk'
         Tdb = pd.concat([Tdb, db]).reset_index(drop=True)
 
-        if len(Tdb) > 0:
-            type = tRep.type_b6(b6_loc)
-            if type == 'diamond':
-                Tdb['scaffold'] = ['_'.join(x.split('|')[0].split('_')[:-1]) for x in Tdb['querry']]
-            elif type == 'b6+':
-                Tdb['scaffold'] = ['_'.join(x.split('_')[:-1]) for x in Tdb['querry']]
+    if len(Tdb) > 0:
+        type = tRep.type_b6(b6_loc)
+        if type == 'diamond':
+            Tdb['scaffold'] = [extract_diamond_scaffold(x) for x in Tdb['querry']]
+        elif type == 'b6+':
+            Tdb['scaffold'] = ['_'.join(x.split('_')[:-1]) for x in Tdb['querry']]
 
 
     # Save
