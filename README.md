@@ -51,7 +51,9 @@ If you're in the Sonnenburg lab, this special database is located at `/LAB_DATA/
 
 The first part is the UniRef100 ID; the second part is the taxID of the representative organism of the cluster (based on the file `ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.gz`); the third part is the taxID of the UniRef100 cluster as a whole (based on the original fasta header description).
 
-If you're not in the Sonnenburg lab and are interested in using this tool, drop me a line. I'm happy to share this database, but because it is ~80Gb, I can't think of an easy way to share it publicly. You can also recreate this yourself if you'd like using the format described above.
+If you're not in the Sonnenburg lab and are interested in using this tool, drop me a line. I'm happy to share this database, but because it is ~80Gb, I can't think of an easy way to share it publicly. 
+
+You can also recreate this yourself if you'd like using the format described above. An example script that I used to created the translated database to search against is here - [TaxIDMapping_public.ipynb](TaxIDMapping_public.ipynb)
 
 You can then search against this database using a command like:
 
