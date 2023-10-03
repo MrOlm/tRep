@@ -9,3 +9,6 @@
 
 # most recent distribution for pypi
 dist/
+
+# ete3 stuff
+taxdump.tar.gz

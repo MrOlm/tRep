@@ -106,12 +106,12 @@ def parse_prodigal_genes(gene_fasta):
 
         table['gene'].append(gene)
         table['scaffold'].append("_".join(gene.split("_")[:-1]))
-        table['direction'].append(record.description.split("#")[3].strip())
-        table['partial'].append('partial=00' not in record.description)
-
-        # NOTE: PRODIGAL USES A 1-BASED INDEX AND WE USE 0, SO CONVERT TO 0 HERE
-        table['start'].append(int(record.description.split("#")[1].strip())-1)
-        table['end'].append(int(record.description.split("#")[2].strip())-1)
+        # table['direction'].append(record.description.split("#")[3].strip())
+        # table['partial'].append('partial=00' not in record.description)
+        #
+        # # NOTE: PRODIGAL USES A 1-BASED INDEX AND WE USE 0, SO CONVERT TO 0 HERE
+        # table['start'].append(int(record.description.split("#")[1].strip())-1)
+        # table['end'].append(int(record.description.split("#")[2].strip())-1)
 
     Gdb = pd.DataFrame(table)
 
